@@ -379,19 +379,27 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Delete this product?')) return;
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
 
+    setProductMessage('⏳ Deleting product...');
+    
     try {
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: 'DELETE',
-          credentials: 'include',
+        credentials: 'include',
       });
 
       if (response.ok) {
+        setProductMessage('✅ Product deleted successfully!');
         fetchProducts();
+        setTimeout(() => setProductMessage(''), 3000);
+      } else {
+        const data = await response.json();
+        setProductMessage('❌ Failed to delete product: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error deleting product:', error);
+      setProductMessage('❌ Error deleting product');
     }
   };
 

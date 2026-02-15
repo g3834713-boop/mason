@@ -20,7 +20,7 @@ export async function DELETE(
     }
 
     const decoded = verifyToken(token);
-    if (!decoded || decoded.role !== 'admin') {
+    if (!decoded || decoded.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
