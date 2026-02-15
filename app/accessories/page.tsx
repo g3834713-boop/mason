@@ -122,9 +122,17 @@ export default function AccessoriesPage() {
   };
 
   const handleWhatsAppOrder = async () => {
+    if (cart.length === 0) {
+      alert('Your cart is empty. Please add items before ordering.');
+      return;
+    }
+
     try {
-      const response = await fetch('/api/user/me');
+      const response = await fetch('/api/user/me', {
+        credentials: 'include',
+      });
       if (!response.ok) {
+        alert('Please login to place an order.');
         router.push('/login');
         return;
       }
@@ -166,9 +174,13 @@ export default function AccessoriesPage() {
 
       // Open WhatsApp
       window.open(whatsappLink, '_blank');
+      
+      // Clear cart after successful order
+      setCart([]);
+      setShowCart(false);
     } catch (error) {
       console.error('Error:', error);
-      router.push('/login');
+      alert('An error occurred. Please try again.');
     }
   };
 
