@@ -296,9 +296,19 @@ export default function AccessoriesPage() {
                       key={product._id}
                       className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden"
                     >
-                      {/* Image Placeholder */}
-                      <div className="bg-gray-200 h-64 flex items-center justify-center text-6xl">
-                        {getCategoryEmoji(product.category)}
+                      {/* Product Image */}
+                      <div className="bg-gray-200 h-64 flex items-center justify-center overflow-hidden">
+                        {product.imageUrl ? (
+                          <img 
+                            src={product.imageUrl} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-6xl text-gold">
+                            {getCategoryEmoji(product.category)}
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
