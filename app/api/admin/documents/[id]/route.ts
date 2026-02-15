@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import DocumentModel from '@/models/Document';
-import { getSupabaseServerClient } from '@/lib/supabase';
+import { deleteFileFromGridFS } from '@/lib/gridfs';
 
 export async function DELETE(
   request: Request,
@@ -30,13 +30,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    // Delete file from Supabase
+    // Delete file from GridFS
     if (document.storagePath) {
       try {
-        const supabase = getSupabaseServerClient();
-        await supabase.storage.from('documents').remove([document.storagePath]);
+        await deleteFileFromGridFS(document.storagePath);
       } catch (err) {
-        console.error('Error deleting file from Supabase:', err);
+        console.error('Error deleting file from GridFS:', err);
       }
     }
 
