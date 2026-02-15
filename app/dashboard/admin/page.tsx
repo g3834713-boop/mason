@@ -1250,28 +1250,189 @@ export default function AdminDashboard() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="font-semibold text-gray-700">Occupation:</span>
-                          <p className="text-gray-600">{app.occupation}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-gray-700">Location:</span>
-                          <p className="text-gray-600">{app.city}, {app.country}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-gray-700">Voucher:</span>
-                          <p className="text-gray-600 font-mono">{app.voucherCode}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-gray-700">Applied:</span>
-                          <p className="text-gray-600">{new Date(app.createdAt).toLocaleDateString()}</p>
+                      {/* Personal Information */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Personal Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-semibold text-gray-700">Full Name:</span>
+                            <p className="text-gray-600">{app.fullName}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Date of Birth:</span>
+                            <p className="text-gray-600">{new Date(app.dateOfBirth).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Place of Birth:</span>
+                            <p className="text-gray-600">{app.placeOfBirth}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Nationality:</span>
+                            <p className="text-gray-600">{app.nationality}</p>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="font-semibold text-gray-700 mb-2">Reason for Joining:</p>
-                        <p className="text-gray-600 text-sm">{app.reason}</p>
+                      {/* Contact Information */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Contact Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-semibold text-gray-700">Email:</span>
+                            <p className="text-gray-600">{app.email}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Phone:</span>
+                            <p className="text-gray-600">{app.phone}</p>
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-1">
+                            <span className="font-semibold text-gray-700">Address:</span>
+                            <p className="text-gray-600">{app.address}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">City:</span>
+                            <p className="text-gray-600">{app.city}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">State/Province:</span>
+                            <p className="text-gray-600">{app.state}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Country:</span>
+                            <p className="text-gray-600">{app.country}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Postal Code:</span>
+                            <p className="text-gray-600">{app.postalCode}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Professional Information */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Professional Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-semibold text-gray-700">Occupation:</span>
+                            <p className="text-gray-600">{app.occupation}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Employer:</span>
+                            <p className="text-gray-600">{app.employer}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Years in Profession:</span>
+                            <p className="text-gray-600">{app.yearsInProfession}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Masonic Information */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Masonic Information</h4>
+                        <div className="space-y-3 text-sm">
+                          <div>
+                            <span className="font-semibold text-gray-700">Why do you want to become a Freemason?</span>
+                            <p className="text-gray-600 mt-1">{app.reason}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Knowledge of Freemasonry:</span>
+                            <p className="text-gray-600 mt-1">{app.knowledgeOfFreemasonry}</p>
+                          </div>
+                          {app.recommendedBy && (
+                            <div>
+                              <span className="font-semibold text-gray-700">Recommended By:</span>
+                              <p className="text-gray-600">{app.recommendedBy}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <span className="font-semibold text-gray-700">Previously Applied:</span>
+                              <p className="text-gray-600">{app.previouslyApplied ? 'Yes' : 'No'}</p>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-gray-700">Relatives in Freemasonry:</span>
+                              <p className="text-gray-600">{app.relativesInFreemasonry ? 'Yes' : 'No'}</p>
+                            </div>
+                          </div>
+                          {app.relativesInFreemasonry && app.relativeDetails && (
+                            <div>
+                              <span className="font-semibold text-gray-700">Relative Details:</span>
+                              <p className="text-gray-600 mt-1">{app.relativeDetails}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Character References */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Character References</h4>
+                        <div className="space-y-4">
+                          {app.references && app.references.map((ref: any, index: number) => (
+                            <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                              <p className="font-semibold text-navy mb-2">Reference {index + 1}</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="font-semibold text-gray-700">Name:</span>
+                                  <p className="text-gray-600">{ref.name}</p>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">Relationship:</span>
+                                  <p className="text-gray-600">{ref.relationship}</p>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">Phone:</span>
+                                  <p className="text-gray-600">{ref.phone}</p>
+                                </div>
+                                <div>
+                                  <span className="font-semibold text-gray-700">Email:</span>
+                                  <p className="text-gray-600">{ref.email}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Background Information */}
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-navy mb-3 text-lg border-b pb-2">Background Information</h4>
+                        <div className="space-y-3 text-sm">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <span className="font-semibold text-gray-700">Criminal Record:</span>
+                              <p className="text-gray-600">{app.criminalRecord ? 'Yes' : 'No'}</p>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-gray-700">Belief in Supreme Being:</span>
+                              <p className="text-gray-600">{app.beliefInSupremeBeing ? 'Yes' : 'No'}</p>
+                            </div>
+                          </div>
+                          {app.criminalRecord && app.criminalDetails && (
+                            <div>
+                              <span className="font-semibold text-gray-700">Criminal Record Details:</span>
+                              <p className="text-gray-600 mt-1">{app.criminalDetails}</p>
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-semibold text-gray-700">Moral Character:</span>
+                            <p className="text-gray-600 mt-1">{app.moralCharacter}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Application Details */}
+                      <div className="mb-4 pt-4 border-t border-gray-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-semibold text-gray-700">Voucher Code:</span>
+                            <p className="text-gray-600 font-mono">{app.voucherCode}</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">Application Date:</span>
+                            <p className="text-gray-600">{new Date(app.createdAt).toLocaleDateString()} at {new Date(app.createdAt).toLocaleTimeString()}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
