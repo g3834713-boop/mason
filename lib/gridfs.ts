@@ -1,5 +1,6 @@
-import { GridFSBucket, MongoClient, ObjectId } from 'mongodb';
+import { GridFSBucket } from 'mongodb';
 import { Readable } from 'stream';
+import mongoose from 'mongoose';
 import dbConnect from './mongodb';
 
 let gridFSBucket: GridFSBucket | null = null;
@@ -7,12 +8,14 @@ let gridFSBucket: GridFSBucket | null = null;
 async function getGridFSBucket(): Promise<GridFSBucket> {
   if (gridFSBucket) return gridFSBucket;
 
-  // Get the MongoDB connection from existing Mongoose connection
-  const mongoose = require('mongoose');
+  // Ensure connection is established
+  await dbConnect();
+
+  // Get the MongoDB connection from Mongoose
   const mongooseConnection = mongoose.connection;
 
-  if (!mongooseConnection.client) {
-    throw new Error('MongoDB client not initialized');
+  if (!mongooseConnection.db) {
+    throw new Error('MongoDB database not initialized');
   }
 
   const db = mongooseConnection.db;
@@ -37,7 +40,7 @@ export async function uploadFileToGridFS(
       },
     });
 
-    stream.on('finish', (file: { _id: ObjectId }) => {
+    stream.on('finish', (file: any) => {
       resolve(file._id.toString());
     });
 
@@ -55,7 +58,8 @@ export async function getFileFromGridFS(fileId: string): Promise<Buffer> {
   const bucket = await getGridFSBucket();
 
   return new Promise((resolve, reject) => {
-    const stream = bucket.openDownloadStream(new ObjectId(fileId));
+    const objectId = new mongoose.Types.ObjectId(fileId);
+    const stream = bucket.openDownloadStream(objectId);
     const chunks: any[] = [];
 
     stream.on('data', (chunk) => {
@@ -77,7 +81,8 @@ export async function deleteFileFromGridFS(fileId: string): Promise<void> {
   const bucket = await getGridFSBucket();
 
   try {
-    bucket.delete(new ObjectId(fileId));
+    const objectId = new mongoose.Types.ObjectId(fileId);
+    await bucket.delete(objectId);
   } catch (error) {
     throw error;
   }
