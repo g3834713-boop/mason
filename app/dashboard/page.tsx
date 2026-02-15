@@ -135,7 +135,7 @@ export default function Dashboard() {
             {user.status === 'PENDING' && (
               <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
                 <p className="text-yellow-800">
-                  <strong>Your application is under review.</strong> Our team will contact you once a decision has been made. This process typically takes 2-4 weeks.
+                  <strong>Your application is under review.</strong> Our team will contact you once a decision has been made. This process typically takes 24-72 hours.
                 </p>
               </div>
             )}
