@@ -42,8 +42,8 @@ export async function uploadFileToGridFS(
       },
     });
 
-    stream.on('finish', (file: any) => {
-      resolve(file._id.toString());
+    stream.on('finish', () => {
+      resolve(stream.id.toString());
     });
 
     stream.on('error', (error: Error) => {
