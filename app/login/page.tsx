@@ -53,7 +53,7 @@ export default function Login() {
       if (response.ok) {
         // Redirect based on role
         if (data.user?.role === 'ADMIN') {
-          router.push('/dashboard/admin');
+          router.push('/unruly-business');
         } else {
           router.push('/dashboard');
         }
