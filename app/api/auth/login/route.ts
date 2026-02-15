@@ -7,10 +7,15 @@ import { getClientIp } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    console.log('🔐 Login attempt started');
+    console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+    
     await dbConnect();
+    console.log('✅ DB connected');
 
     const body = await request.json();
     const { email, password } = body;
+    console.log('📧 Login for email:', email);
 
     // Validation
     if (!email || !password) {
@@ -22,6 +27,8 @@ export async function POST(request: Request) {
 
     // Find user
     const user = await User.findOne({ email: email.toLowerCase() });
+    console.log('👤 User found:', !!user);
+    
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -31,6 +38,8 @@ export async function POST(request: Request) {
 
     // Verify password
     const isPasswordValid = await comparePassword(password, user.passwordHash);
+    console.log('🔑 Password valid:', isPasswordValid);
+    
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
       email: user.email,
       role: user.role,
     });
+    console.log('🎫 Token generated');
 
     // Log activity
     const ipAddress = getClientIp(request);
@@ -53,6 +63,7 @@ export async function POST(request: Request) {
       ipAddress,
       userAgent: request.headers.get('user-agent') || 'unknown',
     });
+    console.log('📝 Activity logged');
 
     // Create response with cookie
     const response = NextResponse.json(
@@ -78,12 +89,16 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+    console.log('✅ Login successful');
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     return NextResponse.json(
-      { error: 'An error occurred during login' },
+      { 
+        error: 'An error occurred during login',
+        details: (error as any).message
+      },
       { status: 500 }
     );
   }
