@@ -56,7 +56,7 @@ export default function BuyVoucherPage() {
         `Phone: ${user.phone}\n\n` +
         `*Voucher Request:*\n` +
         `Amount: ${currency} ${parseFloat(amount).toFixed(2)}\n\n` +
-        `Please process this voucher purchase and send me the voucher code. Thank you!`;
+        `Please I want to purchase a voucher. Thank you!`;
 
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
       
