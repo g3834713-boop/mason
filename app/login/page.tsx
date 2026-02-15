@@ -60,6 +60,9 @@ export default function Login() {
         router.refresh();
       } else {
         setError(data.error || 'Login failed');
+        if (data.details) {
+          console.error('Login error details:', data.details);
+        }
       }
     } catch (error) {
       setError('Network error. Please try again.');
