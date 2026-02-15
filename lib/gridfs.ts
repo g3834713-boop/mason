@@ -46,7 +46,7 @@ export async function uploadFileToGridFS(
       resolve(file._id.toString());
     });
 
-    stream.on('error', (error) => {
+    stream.on('error', (error: Error) => {
       reject(error);
     });
 
@@ -72,7 +72,7 @@ export async function getFileFromGridFS(fileId: string): Promise<Buffer> {
       resolve(Buffer.concat(chunks));
     });
 
-    stream.on('error', (error) => {
+    stream.on('error', (error: Error) => {
       reject(error);
     });
   });
