@@ -32,6 +32,12 @@ export async function POST(request: Request) {
     }
 
     // Upload to Supabase
+    // Debug: Check environment variables
+    console.log('🔍 Supabase env check:');
+    console.log('  URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('  Service key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log('  Anon key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
     const supabase = getSupabaseServerClient();
     const timestamp = Date.now();
     const originalName = file.name;
@@ -48,8 +54,13 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      console.error('Supabase upload error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+      console.error('🔴 Supabase upload error:', uploadError);
+      console.error('🔴 Error message:', uploadError.message);
+      console.error('🔴 Full error:', JSON.stringify(uploadError));
+      return NextResponse.json({ 
+        error: 'Failed to upload file',
+        details: uploadError.message
+      }, { status: 500 });
     }
 
     // Get public URL

@@ -82,7 +82,9 @@ export async function POST(request: Request) {
           });
 
         if (uploadError) {
-          console.error('Supabase upload error:', uploadError);
+          console.error('🔴 Supabase upload error:', uploadError);
+          console.error('🔴 Error message:', uploadError.message);
+          console.error('🔴 Full error:', JSON.stringify(uploadError));
           return NextResponse.json(
             { 
               error: 'Failed to upload image',

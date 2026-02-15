@@ -237,6 +237,7 @@ export default function AdminDashboard() {
         body: formData,
       });
 
+      const data = await response.json();
       if (response.ok) {
         setUploadMessage('Document uploaded successfully!');
         setSelectedFile(null);
@@ -244,11 +245,13 @@ export default function AdminDashboard() {
         setDocumentCategory('OTHER');
         setTimeout(() => setUploadMessage(''), 3000);
       } else {
-        setUploadMessage('Failed to upload document');
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to upload document');
+        setUploadMessage('\u2717 ' + errorMsg);
+        console.error('Document upload error details:', data);
       }
     } catch (error) {
       console.error('Error uploading document:', error);
-      setUploadMessage('Error uploading document');
+      setUploadMessage('\u2717 Error uploading document: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setUploading(false);
     }
