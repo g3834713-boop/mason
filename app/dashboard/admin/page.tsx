@@ -69,11 +69,25 @@ export default function AdminDashboard() {
     sizes: '',
   });
 
+  // Voucher management states
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [voucherMessage, setVoucherMessage] = useState('');
+  const [newVoucher, setNewVoucher] = useState({
+    amount: '',
+    currency: 'USD',
+  });
+
+  // Recruitment applications states
+  const [recruitmentApplications, setRecruitmentApplications] = useState<any[]>([]);
+  const [recruitmentMessage, setRecruitmentMessage] = useState('');
+
   useEffect(() => {
     fetchUsers();
     fetchProducts();
     fetchServiceApplications();
     fetchWhatsAppSettings();
+    fetchVouchers();
+    fetchRecruitmentApplications();
   }, []);
 
   useEffect(() => {
@@ -135,6 +149,34 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching service applications:', error);
+    }
+  };
+
+  const fetchVouchers = async () => {
+    try {
+      const response = await fetch('/api/admin/vouchers', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setVouchers(data.vouchers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching vouchers:', error);
+    }
+  };
+
+  const fetchRecruitmentApplications = async () => {
+    try {
+      const response = await fetch('/api/admin/recruitments', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRecruitmentApplications(data.applications || []);
+      }
+    } catch (error) {
+      console.error('Error fetching recruitment applications:', error);
     }
   };
 
@@ -426,6 +468,43 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCreateVoucher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newVoucher.amount || parseFloat(newVoucher.amount) <= 0) {
+      setVoucherMessage('❌ Please enter a valid amount');
+      return;
+    }
+
+    setVoucherMessage('⏳ Generating voucher...');
+
+    try {
+      const response = await fetch('/api/admin/vouchers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: parseFloat(newVoucher.amount),
+          currency: newVoucher.currency,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setVoucherMessage(`✅ Voucher created! Code: ${data.voucher.code}`);
+        setNewVoucher({ amount: '', currency: 'USD' });
+        fetchVouchers();
+        setTimeout(() => setVoucherMessage(''), 10000); // Show for 10 seconds so admin can copy
+      } else {
+        setVoucherMessage('❌ ' + (data.error || 'Failed to create voucher'));
+      }
+    } catch (error) {
+      console.error('Error creating voucher:', error);
+      setVoucherMessage('❌ Error creating voucher');
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -548,6 +627,26 @@ export default function AdminDashboard() {
               }`}
             >
               Service Applications
+            </button>
+            <button
+              onClick={() => setActiveTab('vouchers')}
+              className={`px-6 py-3 font-semibold border-b-2 transition ${
+                activeTab === 'vouchers'
+                  ? 'border-gold text-gold'
+                  : 'border-transparent text-gray-600 hover:text-navy'
+              }`}
+            >
+              Vouchers
+            </button>
+            <button
+              onClick={() => setActiveTab('recruitments')}
+              className={`px-6 py-3 font-semibold border-b-2 transition ${
+                activeTab === 'recruitments'
+                  ? 'border-gold text-gold'
+                  : 'border-transparent text-gray-600 hover:text-navy'
+              }`}
+            >
+              Recruitments
             </button>
             <button
               onClick={() => setActiveTab('settings')}
@@ -1025,6 +1124,161 @@ export default function AdminDashboard() {
               ) : (
                 <div className="text-center py-12 bg-white rounded-lg shadow-md">
                   <p className="text-gray-500">No service applications yet.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Vouchers Tab */}
+          {activeTab === 'vouchers' && (
+            <>
+              <h2 className="font-heading text-2xl text-navy mb-6">Voucher Management</h2>
+
+              {/* Create Voucher Form */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 className="font-heading text-xl text-navy mb-4">Create New Voucher</h3>
+                
+                <form onSubmit={handleCreateVoucher} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Amount"
+                      value={newVoucher.amount}
+                      onChange={(e) => setNewVoucher({ ...newVoucher, amount: e.target.value })}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
+                      required
+                    />
+                    
+                    <select
+                      value={newVoucher.currency}
+                      onChange={(e) => setNewVoucher({ ...newVoucher, currency: e.target.value })}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
+                    >
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-gold text-navy font-bold rounded-lg hover:bg-gold-light transition"
+                    >
+                      Generate Voucher
+                    </button>
+                  </div>
+
+                  {voucherMessage && (
+                    <div className={`p-4 rounded-lg text-center font-semibold ${
+                      voucherMessage.includes('✅') 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {voucherMessage}
+                    </div>
+                  )}
+                </form>
+              </div>
+
+              {/* Vouchers List */}
+              {vouchers.length > 0 ? (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Code</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Used By</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vouchers.map((voucher) => (
+                        <tr key={voucher._id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-mono font-bold text-navy">{voucher.code}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{voucher.currency} {voucher.amount.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              voucher.isUsed 
+                                ? 'bg-red-100 text-red-800' 
+                                : 'bg-green-100 text-green-800'
+                            }`}>
+                              {voucher.isUsed ? 'USED' : 'AVAILABLE'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {voucher.usedBy ? voucher.usedBy.fullName : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(voucher.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                  <p className="text-gray-500">No vouchers created yet.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Recruitments Tab */}
+          {activeTab === 'recruitments' && (
+            <>
+              <h2 className="font-heading text-2xl text-navy mb-6">Recruitment Applications</h2>
+
+              {recruitmentApplications.length > 0 ? (
+                <div className="space-y-6">
+                  {recruitmentApplications.map((app) => (
+                    <div key={app._id} className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-heading text-xl text-navy">{app.fullName}</h3>
+                          <p className="text-sm text-gray-600">{app.email} • {app.phone}</p>
+                        </div>
+                        <span className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                          app.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          app.status === 'UNDER_REVIEW' ? 'bg-blue-100 text-blue-800' :
+                          app.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {app.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="font-semibold text-gray-700">Occupation:</span>
+                          <p className="text-gray-600">{app.occupation}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-gray-700">Location:</span>
+                          <p className="text-gray-600">{app.city}, {app.country}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-gray-700">Voucher:</span>
+                          <p className="text-gray-600 font-mono">{app.voucherCode}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-gray-700">Applied:</span>
+                          <p className="text-gray-600">{new Date(app.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="font-semibold text-gray-700 mb-2">Reason for Joining:</p>
+                        <p className="text-gray-600 text-sm">{app.reason}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                  <p className="text-gray-500">No recruitment applications yet.</p>
                 </div>
               )}
             </>

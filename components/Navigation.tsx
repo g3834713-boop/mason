@@ -53,6 +53,7 @@ export default function Navigation() {
     { href: '/about', label: 'About' },
     { href: '/benefits', label: 'Benefits' },
     { href: '/testimonials', label: 'Testimonials' },
+    { href: '/join-now', label: 'Join Now' },
     { href: '/contact', label: 'Contact' },
   ];
 
