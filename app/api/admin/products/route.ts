@@ -62,6 +62,12 @@ export async function POST(request: Request) {
     // Upload image to Supabase if provided
     if (imageFile && imageFile.size > 0) {
       try {
+        // Debug: Check environment variables
+        console.log('🔍 Supabase env check:');
+        console.log('  URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+        console.log('  Service key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+        console.log('  Anon key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
         const supabase = getSupabaseServerClient();
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
