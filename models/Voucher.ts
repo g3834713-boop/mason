@@ -27,7 +27,7 @@ const VoucherSchema: Schema = new Schema(
   }
 );
 
-VoucherSchema.index({ code: 1 });
+// code already has unique: true which creates an index
 VoucherSchema.index({ isUsed: 1 });
 
 const Voucher: Model<IVoucher> = 
