@@ -265,16 +265,26 @@ export default function AdminDashboard() {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('name', newProduct.name);
+      formData.append('description', newProduct.description);
+      formData.append('category', newProduct.category);
+      formData.append('price', newProduct.price);
+      formData.append('currency', newProduct.currency);
+      formData.append('inStock', String(newProduct.inStock));
+      formData.append('stockQuantity', newProduct.stockQuantity);
+      formData.append('sizes', newProduct.sizes);
+
+      // Add image if selected
+      const imageInput = document.getElementById('productImage') as HTMLInputElement;
+      if (imageInput?.files?.[0]) {
+        formData.append('image', imageInput.files[0]);
+      }
+
       const response = await fetch('/api/admin/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          ...newProduct,
-          price: parseFloat(newProduct.price),
-          stockQuantity: parseInt(newProduct.stockQuantity),
-          sizes: newProduct.sizes.split(',').map(s => s.trim()).filter(s => s),
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -294,6 +304,7 @@ export default function AdminDashboard() {
           stockQuantity: '',
           sizes: '',
         });
+        if (imageInput) imageInput.value = '';
         setTimeout(() => setProductMessage(''), 3000);
       } else {
         setProductMessage('❌ ' + (data.error || 'Failed to add product'));
@@ -789,6 +800,17 @@ export default function AdminDashboard() {
                       onChange={(e) => setNewProduct({ ...newProduct, sizes: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
                     />
+
+                    <div>
+                      <label className="block text-gray-700 font-semibold mb-2">Product Image</label>
+                      <input
+                        id="productImage"
+                        type="file"
+                        accept="image/*"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gold file:text-navy hover:file:bg-gold-light"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Upload a product image (JPG, PNG, WebP)</p>
+                    </div>
 
                     <button
                       type="submit"
