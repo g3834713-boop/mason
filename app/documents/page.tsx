@@ -89,16 +89,16 @@ export default function DocumentsPage() {
           <div className="flex items-center justify-between h-20">
             <Link href="/" className="flex items-center space-x-2">
               <div className="text-2xl font-heading text-gold">⚒</div>
-              <span className="text-xl font-heading text-gold">FREEMASON INTERNATIONAL</span>
+              <span className="text-sm sm:text-xl font-heading text-gold hidden sm:inline">FREEMASON INTERNATIONAL</span>
             </Link>
-            <div className="flex items-center space-x-6">
-              <Link href="/dashboard" className="text-gray-300 hover:text-gold transition">
+            <div className="flex items-center space-x-2 sm:space-x-6">
+              <Link href="/dashboard" className="text-gray-300 hover:text-gold transition text-sm sm:text-base">
                 Dashboard
               </Link>
-              <Link href="/documents" className="text-gold border-b-2 border-gold">
+              <Link href="/documents" className="text-gold border-b-2 border-gold text-sm sm:text-base">
                 Documents
               </Link>
-              <Link href="/accessories" className="text-gray-300 hover:text-gold transition">
+              <Link href="/accessories" className="text-gray-300 hover:text-gold transition text-sm sm:text-base">
                 Accessories
               </Link>
             </div>
