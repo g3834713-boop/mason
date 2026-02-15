@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { uploadToS3, getS3PublicUrl, AWS_S3_BUCKET } from '@/lib/s3';
+import { uploadToR2, getR2PublicUrl, R2_BUCKET } from '@/lib/s3';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,24 +31,24 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer
     const buffer = await file.arrayBuffer();
 
-    // Upload to S3
+    // Upload to Cloudflare R2
     try {
-      await uploadToS3(
-        AWS_S3_BUCKET,
+      await uploadToR2(
+        R2_BUCKET,
         filename,
         new Uint8Array(buffer),
         file.type
       );
-    } catch (s3Error: any) {
-      console.error('S3 upload error:', s3Error);
+    } catch (r2Error: any) {
+      console.error('Cloudflare R2 upload error:', r2Error);
       return NextResponse.json(
-        { error: 'Failed to upload file to S3: ' + s3Error.message },
+        { error: 'Failed to upload file to R2: ' + r2Error.message },
         { status: 500 }
       );
     }
 
     // Get public URL
-    const publicUrl = getS3PublicUrl(filename);
+    const publicUrl = getR2PublicUrl(filename);
 
     return NextResponse.json({
       filename: filename,
