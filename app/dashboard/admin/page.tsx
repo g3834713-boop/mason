@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 
 interface User {
   _id: string;
@@ -227,31 +226,26 @@ export default function AdminDashboard() {
     setUploadMessage('');
 
     try {
-      // Upload file directly from client to Supabase
+      // Upload file through API endpoint (S3)
       setUploadMessage('📤 Uploading file...');
       
-      const timestamp = Date.now();
-      const originalName = selectedFile.name;
-      const ext = originalName.substring(originalName.lastIndexOf('.'));
-      const storagePath = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
+      const formData = new FormData();
+      formData.append('file', selectedFile);
       
-      const { data: uploadedData, error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(storagePath, selectedFile, {
-          contentType: selectedFile.type,
-        });
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
       
-      if (uploadError) {
-        setUploadMessage('❌ File upload failed: ' + uploadError.message);
-        console.error('File upload error:', uploadError);
+      const uploadData = await uploadResponse.json();
+      
+      if (!uploadResponse.ok) {
+        setUploadMessage('❌ File upload failed: ' + (uploadData.error || 'Unknown error'));
+        console.error('File upload error:', uploadData);
         setUploading(false);
         return;
       }
-      
-      // Get public URL
-      const { data: publicUrl } = supabase.storage
-        .from('documents')
-        .getPublicUrl(storagePath);
       
       // Send document metadata to API
       setUploadMessage('💾 Saving document...');
@@ -264,12 +258,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           userId: selectedUserId,
           category: documentCategory,
-          fileName: storagePath,
-          originalName,
+          fileName: uploadData.filename,
+          originalName: uploadData.originalName,
           fileType: selectedFile.type,
           fileSize: selectedFile.size,
-          filePath: publicUrl.publicUrl,
-          storagePath,
+          filePath: uploadData.url,
+          storagePath: uploadData.path,
         }),
       });
 
@@ -306,34 +300,30 @@ export default function AdminDashboard() {
     try {
       let imageUrl = '';
       
-      // Upload image directly from client if selected
+      // Upload image through API endpoint (S3) if selected
       const imageInput = document.getElementById('productImage') as HTMLInputElement;
       if (imageInput?.files?.[0]) {
         const imageFile = imageInput.files[0];
         setProductMessage('📤 Uploading image...');
         
-        const timestamp = Date.now();
-        const ext = imageFile.name.substring(imageFile.name.lastIndexOf('.'));
-        const storagePath = `products/${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
+        const formData = new FormData();
+        formData.append('file', imageFile);
         
-        const { data: uploadedData, error: uploadError } = await supabase.storage
-          .from('documents')
-          .upload(storagePath, imageFile, {
-            contentType: imageFile.type,
-          });
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
         
-        if (uploadError) {
-          setProductMessage('❌ Image upload failed: ' + uploadError.message);
-          console.error('Image upload error:', uploadError);
+        const uploadData = await uploadResponse.json();
+        
+        if (!uploadResponse.ok) {
+          setProductMessage('❌ Image upload failed: ' + (uploadData.error || 'Unknown error'));
+          console.error('Image upload error:', uploadData);
           return;
         }
         
-        // Get public URL
-        const { data: publicUrl } = supabase.storage
-          .from('documents')
-          .getPublicUrl(storagePath);
-        
-        imageUrl = publicUrl.publicUrl;
+        imageUrl = uploadData.url;
       }
       
       setProductMessage('💾 Saving product...');

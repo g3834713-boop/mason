@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.990.0",
+    "@aws-sdk/lib-storage": "^3.990.0",
+    "@aws-sdk/s3-request-presigner": "^3.990.0",
     "@supabase/supabase-js": "^2.95.3",
     "bcryptjs": "^2.4.3",
     "jose": "^5.2.4",
