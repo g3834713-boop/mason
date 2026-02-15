@@ -64,7 +64,7 @@ export async function getFileFromGridFS(fileId: string): Promise<Buffer> {
     const stream = bucket.openDownloadStream(objectId);
     const chunks: any[] = [];
 
-    stream.on('data', (chunk) => {
+    stream.on('data', (chunk: any) => {
       chunks.push(chunk);
     });
 
