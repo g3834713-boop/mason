@@ -172,12 +172,23 @@ export default function AccessoriesPage() {
       const encodedMessage = encodeURIComponent(message);
       const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
-      // Open WhatsApp
-      window.open(whatsappLink, '_blank');
+      console.log('WhatsApp Number:', whatsappNumber);
+      console.log('Opening WhatsApp Link:', whatsappLink);
+
+      // Create a link and click it (better than window.open for mobile compatibility)
+      const link = document.createElement('a');
+      link.href = whatsappLink;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
-      // Clear cart after successful order
-      setCart([]);
-      setShowCart(false);
+      // Clear cart after initiating order
+      setTimeout(() => {
+        setCart([]);
+        setShowCart(false);
+      }, 500);
     } catch (error) {
       console.error('Error:', error);
       alert('An error occurred. Please try again.');
