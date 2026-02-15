@@ -175,20 +175,21 @@ export default function AccessoriesPage() {
       console.log('WhatsApp Number:', whatsappNumber);
       console.log('Opening WhatsApp Link:', whatsappLink);
 
-      // Create a link and click it (better than window.open for mobile compatibility)
-      const link = document.createElement('a');
-      link.href = whatsappLink;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // For mobile compatibility - try multiple methods
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Mobile: use window.location for better compatibility
+        window.location.href = whatsappLink;
+      } else {
+        // Desktop: use window.open
+        const whatsappWindow = window.open(whatsappLink, '_blank', 'noopener,noreferrer');
+        if (!whatsappWindow) {
+          // Fallback if popup blocked
+          window.location.href = whatsappLink;
+        }
+      }
       
-      // Clear cart after initiating order
-      setTimeout(() => {
-        setCart([]);
-        setShowCart(false);
-      }, 500);
+      // Don't clear cart immediately - let user complete order on WhatsApp first
+      // User can manually clear cart or continue shopping
     } catch (error) {
       console.error('Error:', error);
       alert('An error occurred. Please try again.');
@@ -505,6 +506,16 @@ export default function AccessoriesPage() {
                     className="w-full py-3 bg-gold text-navy font-bold rounded-lg hover:bg-gold-light transition mb-2"
                   >
                     📱 Order on WhatsApp
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm('Are you sure you want to clear your cart?')) {
+                        setCart([]);
+                      }
+                    }}
+                    className="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition mb-2 text-sm"
+                  >
+                    🗑️ Clear Cart
                   </button>
                   <button
                     onClick={() => setShowCart(false)}

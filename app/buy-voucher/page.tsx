@@ -59,7 +59,16 @@ export default function BuyVoucherPage() {
         `Please process this voucher purchase and send me the voucher code. Thank you!`;
 
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      
+      // Mobile-friendly redirect
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        window.location.href = whatsappUrl;
+      } else {
+        const whatsappWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        if (!whatsappWindow) {
+          window.location.href = whatsappUrl;
+        }
+      }
     } catch (error) {
       console.error('Error:', error);
       alert('Please login to buy a voucher');
