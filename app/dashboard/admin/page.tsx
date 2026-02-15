@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 interface User {
   _id: string;
@@ -226,32 +227,67 @@ export default function AdminDashboard() {
     setUploadMessage('');
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('userId', selectedUserId);
-      formData.append('category', documentCategory);
-
-        const response = await fetch('/api/admin/documents', {
+      // Upload file directly from client to Supabase
+      setUploadMessage('📤 Uploading file...');
+      
+      const timestamp = Date.now();
+      const originalName = selectedFile.name;
+      const ext = originalName.substring(originalName.lastIndexOf('.'));
+      const storagePath = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
+      
+      const { data: uploadedData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, selectedFile, {
+          contentType: selectedFile.type,
+        });
+      
+      if (uploadError) {
+        setUploadMessage('❌ File upload failed: ' + uploadError.message);
+        console.error('File upload error:', uploadError);
+        setUploading(false);
+        return;
+      }
+      
+      // Get public URL
+      const { data: publicUrl } = supabase.storage
+        .from('documents')
+        .getPublicUrl(storagePath);
+      
+      // Send document metadata to API
+      setUploadMessage('💾 Saving document...');
+      const response = await fetch('/api/admin/documents', {
         method: 'POST',
-          credentials: 'include',
-        body: formData,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: selectedUserId,
+          category: documentCategory,
+          fileName: storagePath,
+          originalName,
+          fileType: selectedFile.type,
+          fileSize: selectedFile.size,
+          filePath: publicUrl.publicUrl,
+          storagePath,
+        }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        setUploadMessage('Document uploaded successfully!');
+        setUploadMessage('✅ Document uploaded successfully!');
         setSelectedFile(null);
         setSelectedUserId('');
         setDocumentCategory('OTHER');
         setTimeout(() => setUploadMessage(''), 3000);
       } else {
         const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to upload document');
-        setUploadMessage('\u2717 ' + errorMsg);
+        setUploadMessage('❌ ' + errorMsg);
         console.error('Document upload error details:', data);
       }
     } catch (error) {
       console.error('Error uploading document:', error);
-      setUploadMessage('\u2717 Error uploading document: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setUploadMessage('❌ Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setUploading(false);
     }
@@ -268,26 +304,58 @@ export default function AdminDashboard() {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('name', newProduct.name);
-      formData.append('description', newProduct.description);
-      formData.append('category', newProduct.category);
-      formData.append('price', newProduct.price);
-      formData.append('currency', newProduct.currency);
-      formData.append('inStock', String(newProduct.inStock));
-      formData.append('stockQuantity', newProduct.stockQuantity);
-      formData.append('sizes', newProduct.sizes);
-
-      // Add image if selected
+      let imageUrl = '';
+      
+      // Upload image directly from client if selected
       const imageInput = document.getElementById('productImage') as HTMLInputElement;
       if (imageInput?.files?.[0]) {
-        formData.append('image', imageInput.files[0]);
+        const imageFile = imageInput.files[0];
+        setProductMessage('📤 Uploading image...');
+        
+        const timestamp = Date.now();
+        const ext = imageFile.name.substring(imageFile.name.lastIndexOf('.'));
+        const storagePath = `products/${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
+        
+        const { data: uploadedData, error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(storagePath, imageFile, {
+            contentType: imageFile.type,
+          });
+        
+        if (uploadError) {
+          setProductMessage('❌ Image upload failed: ' + uploadError.message);
+          console.error('Image upload error:', uploadError);
+          return;
+        }
+        
+        // Get public URL
+        const { data: publicUrl } = supabase.storage
+          .from('documents')
+          .getPublicUrl(storagePath);
+        
+        imageUrl = publicUrl.publicUrl;
       }
-
+      
+      setProductMessage('💾 Saving product...');
+      
+      // Send product data to API
       const response = await fetch('/api/admin/products', {
         method: 'POST',
         credentials: 'include',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newProduct.name,
+          description: newProduct.description,
+          category: newProduct.category,
+          price: parseFloat(newProduct.price),
+          currency: newProduct.currency,
+          inStock: newProduct.inStock,
+          stockQuantity: parseInt(newProduct.stockQuantity),
+          sizes: newProduct.sizes ? newProduct.sizes.split(',').map(s => s.trim()) : [],
+          imageUrl,
+        }),
       });
 
       const data = await response.json();
@@ -312,11 +380,11 @@ export default function AdminDashboard() {
       } else {
         const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to add product');
         setProductMessage('❌ ' + errorMsg);
-        console.error('Product upload error details:', data);
+        console.error('Product error details:', data);
       }
     } catch (error) {
       console.error('Error adding product:', error);
-      setProductMessage('❌ Error adding product: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setProductMessage('❌ Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 

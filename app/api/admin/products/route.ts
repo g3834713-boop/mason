@@ -3,7 +3,6 @@ import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
-import { getSupabaseServerClient } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   try {
@@ -37,17 +36,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const price = parseFloat(formData.get('price') as string);
-    const currency = formData.get('currency') as string || 'USD';
-    const inStock = formData.get('inStock') === 'true';
-    const stockQuantity = parseInt(formData.get('stockQuantity') as string) || 0;
-    const sizesInput = formData.get('sizes') as string;
-    const sizes = sizesInput ? sizesInput.split(',').map(s => s.trim()) : [];
-    const imageFile = formData.get('image') as File | null;
+    // Parse JSON body (image is now uploaded client-side)
+    const body = await request.json();
+    const name = body.name as string;
+    const description = body.description as string;
+    const category = body.category as string;
+    const price = parseFloat(body.price);
+    const currency = body.currency as string || 'USD';
+    const inStock = body.inStock === true;
+    const stockQuantity = parseInt(body.stockQuantity) || 0;
+    const sizes = Array.isArray(body.sizes) ? body.sizes : [];
+    const imageUrl = body.imageUrl as string || '';
 
     // Validate required fields
     if (!name || !description || !category || isNaN(price)) {
@@ -55,60 +54,6 @@ export async function POST(request: Request) {
         { error: 'Name, description, category, and price are required' },
         { status: 400 }
       );
-    }
-
-    let imageUrl = '';
-
-    // Upload image to Supabase if provided
-    if (imageFile && imageFile.size > 0) {
-      try {
-        // Debug: Check environment variables
-        console.log('🔍 Supabase env check:');
-        console.log('  URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-        console.log('  Service key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-        console.log('  Anon key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-        const supabase = getSupabaseServerClient();
-        const bytes = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const timestamp = Date.now();
-        const ext = imageFile.name.substring(imageFile.name.lastIndexOf('.'));
-        const storagePath = `products/${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
-
-        const { data, error: uploadError } = await supabase.storage
-          .from('documents')
-          .upload(storagePath, buffer, {
-            contentType: imageFile.type,
-          });
-
-        if (uploadError) {
-          console.error('🔴 Supabase upload error:', uploadError);
-          console.error('🔴 Error message:', uploadError.message);
-          console.error('🔴 Full error:', JSON.stringify(uploadError));
-          return NextResponse.json(
-            { 
-              error: 'Failed to upload image',
-              details: uploadError.message,
-              bucket: 'documents',
-              path: storagePath
-            },
-            { status: 500 }
-          );
-        }
-
-        // Get public URL
-        const { data: publicUrl } = supabase.storage
-          .from('documents')
-          .getPublicUrl(storagePath);
-
-        imageUrl = publicUrl.publicUrl;
-      } catch (error) {
-        console.error('Image upload error:', error);
-        return NextResponse.json(
-          { error: 'Failed to process image upload' },
-          { status: 500 }
-        );
-      }
     }
 
     const product = new Product({

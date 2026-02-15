@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import DocumentModel from '@/models/Document';
-import { getSupabaseServerClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -21,63 +20,31 @@ export async function POST(request: Request) {
 
     await dbConnect();
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const userId = formData.get('userId') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
+    // Parse JSON body (file is now uploaded client-side)
+    const body = await request.json();
+    const userId = body.userId as string;
+    const category = body.category as string;
+    const fileName = body.fileName as string;
+    const originalName = body.originalName as string;
+    const fileType = body.fileType as string;
+    const fileSize = body.fileSize as number;
+    const filePath = body.filePath as string;
+    const storagePath = body.storagePath as string;
 
-    if (!file || !userId) {
-      return NextResponse.json({ error: 'File and userId are required' }, { status: 400 });
+    if (!userId || !fileName) {
+      return NextResponse.json({ error: 'userId and fileName are required' }, { status: 400 });
     }
-
-    // Upload to Supabase
-    // Debug: Check environment variables
-    console.log('🔍 Supabase env check:');
-    console.log('  URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log('  Service key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-    console.log('  Anon key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-    const supabase = getSupabaseServerClient();
-    const timestamp = Date.now();
-    const originalName = file.name;
-    const ext = originalName.substring(originalName.lastIndexOf('.'));
-    const storagePath = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const { data, error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(storagePath, buffer, {
-        contentType: file.type,
-      });
-
-    if (uploadError) {
-      console.error('🔴 Supabase upload error:', uploadError);
-      console.error('🔴 Error message:', uploadError.message);
-      console.error('🔴 Full error:', JSON.stringify(uploadError));
-      return NextResponse.json({ 
-        error: 'Failed to upload file',
-        details: uploadError.message
-      }, { status: 500 });
-    }
-
-    // Get public URL
-    const { data: publicUrl } = supabase.storage
-      .from('documents')
-      .getPublicUrl(storagePath);
 
     // Create document record
     const document = await DocumentModel.create({
       userId,
-      fileName: storagePath,
+      fileName,
       originalName,
-      fileType: file.type,
-      fileSize: file.size,
-      filePath: publicUrl.publicUrl,
+      fileType,
+      fileSize,
+      filePath,
       uploadedBy: payload.userId,
-      description: description || '',
+      description: body.description || '',
       category: category || 'OTHER',
       storagePath,
     });
