@@ -203,7 +203,7 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {user.status === 'APPROVED' && (
               <Link
                 href="/apply-for-services"
@@ -240,6 +240,15 @@ export default function Dashboard() {
               <div className="text-4xl text-gold mb-3">📚</div>
               <h3 className="font-heading text-lg text-navy mb-2">Learn More</h3>
               <p className="text-sm text-gray-600">Explore our principles</p>
+            </Link>
+
+            <Link
+              href="/join-now"
+              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition text-center border-t-4 border-gold"
+            >
+              <div className="text-4xl text-gold mb-3">⚒</div>
+              <h3 className="font-heading text-lg text-navy mb-2">Join Now</h3>
+              <p className="text-sm text-gray-600">Apply for recruitment</p>
             </Link>
           </div>
         </div>
