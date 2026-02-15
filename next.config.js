@@ -8,7 +8,6 @@ const nextConfig = {
   },
   env: {
     JWT_SECRET: process.env.JWT_SECRET || 'freemason-secret-key-change-in-production',
-    MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/freemason',
     SMTP_HOST: process.env.SMTP_HOST,
     SMTP_PORT: process.env.SMTP_PORT,
     SMTP_USER: process.env.SMTP_USER,

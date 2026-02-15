@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { uploadToR2, getR2PublicUrl, R2_BUCKET } from '@/lib/s3';
+import { uploadFileToGridFS, getGridFSUrl } from '@/lib/gridfs';
+import dbConnect from '@/lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
+
     // Verify user is authenticated
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
@@ -31,31 +34,30 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer
     const buffer = await file.arrayBuffer();
 
-    // Upload to Cloudflare R2
+    // Upload to MongoDB GridFS
     try {
-      await uploadToR2(
-        R2_BUCKET,
-        filename,
+      const fileId = await uploadFileToGridFS(
         new Uint8Array(buffer),
+        filename,
         file.type
       );
-    } catch (r2Error: any) {
-      console.error('Cloudflare R2 upload error:', r2Error);
+
+      const publicUrl = getGridFSUrl(fileId);
+
+      return NextResponse.json({
+        filename: filename,
+        originalName: file.name,
+        url: publicUrl,
+        path: fileId,
+        fileId: fileId,
+      });
+    } catch (gridfsError: any) {
+      console.error('GridFS upload error:', gridfsError);
       return NextResponse.json(
-        { error: 'Failed to upload file to R2: ' + r2Error.message },
+        { error: 'Failed to upload file to MongoDB: ' + gridfsError.message },
         { status: 500 }
       );
     }
-
-    // Get public URL
-    const publicUrl = getR2PublicUrl(filename);
-
-    return NextResponse.json({
-      filename: filename,
-      originalName: file.name,
-      url: publicUrl,
-      path: filename,
-    });
   } catch (error: any) {
     console.error('Upload endpoint error:', error);
     return NextResponse.json(
