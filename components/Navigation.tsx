@@ -62,6 +62,7 @@ export default function Navigation() {
     { href: '/documents', label: 'Documents' },
     { href: '/accessories', label: 'Accessories' },
     { href: '/apply-for-services', label: 'Services' },
+    { href: '/join-now', label: 'Join Now' },
   ];
 
   return (
