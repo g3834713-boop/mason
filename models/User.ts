@@ -38,7 +38,6 @@ const UserSchema: Schema = new Schema(
 );
 
 // Create indexes
-UserSchema.index({ email: 1 });
 UserSchema.index({ status: 1 });
 UserSchema.index({ createdAt: -1 });
 
