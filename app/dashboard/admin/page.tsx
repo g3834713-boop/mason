@@ -307,7 +307,9 @@ export default function AdminDashboard() {
         if (imageInput) imageInput.value = '';
         setTimeout(() => setProductMessage(''), 3000);
       } else {
-        setProductMessage('❌ ' + (data.error || 'Failed to add product'));
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to add product');
+        setProductMessage('❌ ' + errorMsg);
+        console.error('Product upload error details:', data);
       }
     } catch (error) {
       console.error('Error adding product:', error);
