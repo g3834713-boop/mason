@@ -1,11 +1,10 @@
-import { GridFSBucket } from 'mongodb';
 import { Readable } from 'stream';
 import mongoose from 'mongoose';
 import dbConnect from './mongodb';
 
-let gridFSBucket: GridFSBucket | null = null;
+let gridFSBucket: any = null;
 
-async function getGridFSBucket(): Promise<GridFSBucket> {
+async function getGridFSBucket() {
   if (gridFSBucket) return gridFSBucket;
 
   // Ensure connection is established
@@ -19,6 +18,9 @@ async function getGridFSBucket(): Promise<GridFSBucket> {
   }
 
   const db = mongooseConnection.db;
+  
+  // Use GridFSBucket from mongoose's mongodb
+  const { GridFSBucket } = mongoose.mongo;
   gridFSBucket = new GridFSBucket(db);
 
   return gridFSBucket;
