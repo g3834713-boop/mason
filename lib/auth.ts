@@ -3,13 +3,12 @@ import bcrypt from 'bcryptjs';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Check for JWT_SECRET only in production runtime (not during build)
-if (!JWT_SECRET && process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
-  console.error('❌ CRITICAL: JWT_SECRET environment variable is required in production');
-}
+// For development, provide a fallback only
+const SECRET = JWT_SECRET || 'dev-secret-change-in-production-12345678901234567890';
 
-// Use JWT_SECRET or fallback for dev/build
-const SECRET = JWT_SECRET || 'dev-secret-please-set-jwt-secret-in-env';
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  console.warn('⚠️ WARNING: JWT_SECRET not found, using fallback');
+}
 
 export interface JWTPayload {
   userId: string;
