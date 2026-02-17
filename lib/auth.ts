@@ -35,8 +35,12 @@ export const generateToken = (payload: JWTPayload): string => {
 
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    return jwt.verify(token, SECRET) as JWTPayload;
+    const result = jwt.verify(token, SECRET) as JWTPayload;
+    return result;
   } catch (error) {
+    console.error('[Auth] Token verification error:', (error as any).message);
+    console.error('[Auth] Using SECRET:', SECRET ? 'SET' : 'NOT SET');
+    console.error('[Auth] JWT_SECRET env:', JWT_SECRET ? 'SET' : 'NOT SET');
     return null;
   }
 };
