@@ -55,15 +55,19 @@ export async function POST(request: Request) {
     });
     console.log('🎫 Token generated');
 
-    // Log activity
-    const ipAddress = getClientIp(request);
-    await ActivityLog.create({
-      userId: user._id,
-      action: 'LOGIN',
-      ipAddress,
-      userAgent: request.headers.get('user-agent') || 'unknown',
-    });
-    console.log('📝 Activity logged');
+    // Log activity (non-blocking - don't let this crash the login)
+    try {
+      const ipAddress = getClientIp(request);
+      await ActivityLog.create({
+        userId: user._id,
+        action: 'LOGIN',
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown',
+      });
+      console.log('📝 Activity logged');
+    } catch (logError) {
+      console.error('⚠️ Activity log failed (non-critical):', logError);
+    }
 
     // Create response with cookie
     const response = NextResponse.json(

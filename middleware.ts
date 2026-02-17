@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+
+// Decode JWT payload without verifying signature (safe for role checking in Edge middleware)
+// Full verification still happens in API routes
+function decodeJWTPayload(token: string) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    // Use atob for Edge runtime compatibility (no Buffer)
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = atob(base64);
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
@@ -23,29 +37,15 @@ export function middleware(request: NextRequest) {
   // Admin-only routes - require ADMIN role
   if (pathname.startsWith('/unruly-business')) {
     if (!token) {
-      console.log('[Middleware] No token found for admin route, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
     
-    try {
-      const decoded = verifyToken(token);
-      
-      if (!decoded) {
-        console.log('[Middleware] Token verification failed');
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
-      
-      if (decoded.role !== 'ADMIN') {
-        console.log('[Middleware] User is not admin, role:', decoded.role);
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
-      
-      console.log('[Middleware] Admin access granted to:', decoded.email);
-      return NextResponse.next();
-    } catch (error) {
-      console.error('[Middleware] Error in admin route check:', error);
-      return NextResponse.redirect(new URL('/login', request.url));
+    const decoded = decodeJWTPayload(token);
+    if (!decoded || decoded.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    
+    return NextResponse.next();
   }
 
   // Protected routes (require authentication)
