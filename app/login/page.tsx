@@ -38,6 +38,7 @@ export default function Login() {
     setError('');
 
     try {
+      console.log('📤 Sending login request...');
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,23 +49,36 @@ export default function Login() {
         }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      console.log('📥 Login response status:', response.status);
+      const data = await response.json().catch((err) => {
+        console.error('Failed to parse response JSON:', err);
+        return {};
+      });
+
+      console.log('📋 Response data:', data);
 
       if (response.ok) {
+        console.log('✅ Login successful');
+        console.log('👤 User:', data.user);
+        
         // Redirect based on role
         if (data.user?.role === 'ADMIN') {
+          console.log('🔐 Redirecting to admin dashboard');
           router.push('/unruly-business');
         } else {
+          console.log('📊 Redirecting to user dashboard');
           router.push('/dashboard');
         }
         router.refresh();
       } else {
+        console.error('❌ Login failed:', data.error);
         setError(data.error || 'Login failed');
         if (data.details) {
-          console.error('Login error details:', data.details);
+          console.error('Details:', data.details);
         }
       }
     } catch (error) {
+      console.error('❌ Network error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
