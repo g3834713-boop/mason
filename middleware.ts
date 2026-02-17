@@ -23,15 +23,29 @@ export function middleware(request: NextRequest) {
   // Admin-only routes - require ADMIN role
   if (pathname.startsWith('/unruly-business')) {
     if (!token) {
+      console.log('[Middleware] No token found for admin route, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
     
-    const decoded = verifyToken(token);
-    if (!decoded || decoded.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    try {
+      const decoded = verifyToken(token);
+      
+      if (!decoded) {
+        console.log('[Middleware] Token verification failed');
+        return NextResponse.redirect(new URL('/login', request.url));
+      }
+      
+      if (decoded.role !== 'ADMIN') {
+        console.log('[Middleware] User is not admin, role:', decoded.role);
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      
+      console.log('[Middleware] Admin access granted to:', decoded.email);
+      return NextResponse.next();
+    } catch (error) {
+      console.error('[Middleware] Error in admin route check:', error);
+      return NextResponse.redirect(new URL('/login', request.url));
     }
-    
-    return NextResponse.next();
   }
 
   // Protected routes (require authentication)
