@@ -41,6 +41,8 @@ export default function AdminDashboard() {
   // WhatsApp Settings
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState('');
   const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [formVoucherPrice, setFormVoucherPrice] = useState('50');
+  const [formVoucherCurrency, setFormVoucherCurrency] = useState('USD');
   
   // Document upload states
   const [selectedUserId, setSelectedUserId] = useState('');
@@ -102,6 +104,8 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setWhatsappPhoneNumber(data.phoneNumber);
+        setFormVoucherPrice(data.formVoucherPrice?.toString() || '50');
+        setFormVoucherCurrency(data.formVoucherCurrency || 'USD');
       }
     } catch (error) {
       console.error('Error fetching WhatsApp settings:', error);
@@ -453,18 +457,22 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-        body: JSON.stringify({ phoneNumber: whatsappPhoneNumber }),
+        body: JSON.stringify({ 
+          phoneNumber: whatsappPhoneNumber,
+          formVoucherPrice: parseFloat(formVoucherPrice),
+          formVoucherCurrency: formVoucherCurrency
+        }),
       });
 
       if (response.ok) {
-        setWhatsappMessage('WhatsApp settings saved successfully!');
+        setWhatsappMessage('✅ Settings saved successfully!');
         setTimeout(() => setWhatsappMessage(''), 3000);
       } else {
-        setWhatsappMessage('Failed to save settings');
+        setWhatsappMessage('❌ Failed to save settings');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      setWhatsappMessage('Error saving settings');
+      setWhatsappMessage('❌ Error saving settings');
     }
   };
 
@@ -1484,6 +1492,54 @@ export default function AdminDashboard() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
                       required
                     />
+                  </div>
+
+                  {/* Form Voucher Price Section */}
+                  <div className="pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-navy mb-4">📋 Form Voucher Settings</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Set the price for the standard Form Voucher that appears on the Buy Voucher page.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          Price *
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formVoucherPrice}
+                          onChange={(e) => setFormVoucherPrice(e.target.value)}
+                          placeholder="50"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          Currency *
+                        </label>
+                        <select
+                          value={formVoucherCurrency}
+                          onChange={(e) => setFormVoucherCurrency(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold"
+                          required
+                        >
+                          <option value="USD">USD - US Dollar</option>
+                          <option value="EUR">EUR - Euro</option>
+                          <option value="GBP">GBP - British Pound</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-gold bg-opacity-10 rounded-lg border border-gold">
+                      <p className="text-sm text-navy">
+                        <span className="font-semibold">Current Form Voucher Price:</span> {formVoucherCurrency} {parseFloat(formVoucherPrice || '0').toFixed(2)}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">

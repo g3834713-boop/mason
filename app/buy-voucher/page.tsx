@@ -11,6 +11,8 @@ export default function BuyVoucherPage() {
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [formVoucherPrice, setFormVoucherPrice] = useState(50);
+  const [formVoucherCurrency, setFormVoucherCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +25,19 @@ export default function BuyVoucherPage() {
       if (response.ok) {
         const data = await response.json();
         setWhatsappNumber(data.phoneNumber || '1234567890');
+        setFormVoucherPrice(data.formVoucherPrice || 50);
+        setFormVoucherCurrency(data.formVoucherCurrency || 'USD');
       }
     } catch (error) {
       console.error('Error fetching WhatsApp config:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectFormVoucher = () => {
+    setAmount(formVoucherPrice.toString());
+    setCurrency(formVoucherCurrency);
   };
 
   const handleBuyVoucher = async () => {
@@ -109,6 +118,36 @@ export default function BuyVoucherPage() {
           {/* Purchase Form */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h2 className="font-heading text-2xl text-navy mb-6">Select Voucher Amount</h2>
+
+            {/* Form Voucher Preset */}
+            <div className="mb-8 p-6 border-2 border-gold rounded-lg bg-gradient-to-r from-gold/5 to-gold/10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-heading text-xl text-navy mb-1">📋 Form Voucher (Recommended)</h3>
+                  <p className="text-sm text-gray-600">Standard recruitment application voucher</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-gold">
+                    {formVoucherCurrency} {formVoucherPrice.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSelectFormVoucher}
+                className="w-full py-3 bg-gold text-white font-bold rounded-lg hover:bg-gold/90 transition"
+              >
+                Select Form Voucher
+              </button>
+            </div>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Or enter custom amount</span>
+              </div>
+            </div>
 
             <div className="space-y-6">
               <div>
