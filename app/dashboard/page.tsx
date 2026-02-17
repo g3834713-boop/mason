@@ -34,6 +34,13 @@ export default function Dashboard() {
       });
       if (response.ok) {
         const data = await response.json();
+        
+        // Redirect admins to admin dashboard
+        if (data.user?.role === 'ADMIN') {
+          router.push('/unruly-business');
+          return;
+        }
+        
         setUser(data.user);
       } else {
         router.push('/login');
