@@ -38,18 +38,18 @@ export default function Dashboard() {
         // Redirect admins to admin dashboard
         if (data.user?.role === 'ADMIN') {
           router.push('/unruly-business');
+          // Keep loading state active during redirect
           return;
         }
         
         setUser(data.user);
+        setLoading(false);
       } else {
         router.push('/login');
       }
     } catch (error) {
       console.error('Error fetching user:', error);
       router.push('/login');
-    } finally {
-      setLoading(false);
     }
   };
 
